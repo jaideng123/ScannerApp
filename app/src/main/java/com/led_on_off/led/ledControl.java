@@ -1,16 +1,24 @@
 package com.led_on_off.led;
 
 import android.hardware.Camera;
+import android.support.v4.view.MotionEventCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageSwitcher;
+import android.widget.ImageView;
 import android.widget.Toast;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -24,7 +32,8 @@ import java.util.UUID;
 public class ledControl extends ActionBarActivity {
 
    // Button btnOn, btnOff, btnDis;
-    ImageButton On, Off, Discnt, Abt;
+    ImageButton On, Off, Discnt;
+
     String address = null;
     private ProgressDialog progress;
     BluetoothAdapter myBluetooth = null;
@@ -32,8 +41,13 @@ public class ledControl extends ActionBarActivity {
     private boolean isBtConnected = false;
     private Camera c = null;
     private CameraPreview mPreview = null;
+    ImageView top = null;
+    ImageView bot = null;
+    int currentTopY = 0;
+    int currentBotY = 0;
     //SPP UUID. Look for it
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -51,6 +65,9 @@ public class ledControl extends ActionBarActivity {
         Off = (ImageButton)findViewById(R.id.rewind);
         Discnt = (ImageButton)findViewById(R.id.discnt);
         //Abt = (ImageButton)findViewById(R.id.abt);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
 
         new ConnectBT().execute(); //Call the class to connect
 
@@ -92,8 +109,14 @@ public class ledControl extends ActionBarActivity {
         mPreview = new CameraPreview(this, c);
         FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+        top = (ImageView) findViewById(R.id.topBox);
+        bot = (ImageView) findViewById(R.id.bottomBox);
+        Camera.Size dimensions = c.getParameters().getPreviewSize();
+        setMargins(top,0,100,0,0);
+        setMargins(bot,0,dimensions.width-400,0,0);
+        currentTopY = 100;
+        currentBotY = dimensions.width-400;
     }
-
     private void Disconnect()
     {
         if (btSocket!=null) //If the btSocket is busy
@@ -176,6 +199,15 @@ public class ledControl extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void setMargins(View v,int l, int t, int r, int b) {
+        if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            p.setMargins(l, t, r, b);
+            v.requestLayout();
+        }
+    }
+
+
 
 
     private class ConnectBT extends AsyncTask<Void, Void, Void>  // UI thread
@@ -204,6 +236,7 @@ public class ledControl extends ActionBarActivity {
             }
             catch (IOException e)
             {
+
                 ConnectSuccess = false;//if the try failed, you can check the exception here
             }
             return null;
@@ -213,13 +246,10 @@ public class ledControl extends ActionBarActivity {
         {
             super.onPostExecute(result);
 
-            if (!ConnectSuccess)
-            {
+            if (!ConnectSuccess) {
                 msg("Connection Failed. Is it a SPP Bluetooth? Try again.");
                 finish();
-            }
-            else
-            {
+            } else {
                 msg("Connected.");
                 isBtConnected = true;
             }

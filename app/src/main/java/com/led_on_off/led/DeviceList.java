@@ -78,6 +78,7 @@ public class DeviceList extends ActionBarActivity
             {
                 list.add(bt.getName() + "\n" + bt.getAddress()); //Get the device's name and the address
             }
+            list.add("null \n null");
         }
         else
         {
