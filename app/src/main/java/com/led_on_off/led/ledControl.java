@@ -43,8 +43,8 @@ public class ledControl extends ActionBarActivity {
     private CameraPreview mPreview = null;
     ImageView top = null;
     ImageView bot = null;
-    int currentTopY = 0;
-    int currentBotY = 0;
+    public static int currentTopY = 0;
+    public static int currentBotY = 0;
     //SPP UUID. Look for it
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 

@@ -25,10 +25,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             int width = camera.getParameters().getPreviewSize().width;
             int height = camera.getParameters().getPreviewSize().height;
             decodeYUV420SP(pixels, data, width,  height);
-            int topBar = multipleRowAverage(0,20,height,width);
+            int topBar = multipleRowAverage(ledControl.currentTopY,20,height,width);
+            int botBar = multipleRowAverage(ledControl.currentBotY,20,height,width);
             //Outuput the value of the top left pixel in the preview to LogCat
-            if(isBlack(topBar,10))
+            if(isBlack(topBar,100))
                 Log.i("Pixels", "Top Bar is black");
+            if(isBlack(botBar,100))
+                Log.i("Pixels", "Bottom Bar is black");
 
         }
     };

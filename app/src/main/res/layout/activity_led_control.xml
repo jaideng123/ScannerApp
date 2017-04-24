@@ -19,7 +19,7 @@
     <ImageView
         android:id="@+id/bottomBox"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
+        android:layout_height="20px"
         android:layout_marginTop="50dp"
         android:background="#8056B3CD"
         android:cropToPadding="false"
@@ -29,7 +29,7 @@
     <ImageView
         android:id="@+id/topBox"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
+        android:layout_height="20px"
         android:adjustViewBounds="false"
         android:background="#8056B3CD"
         android:scaleType="fitXY"
