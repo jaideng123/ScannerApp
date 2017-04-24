@@ -21,17 +21,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     Camera.PreviewCallback cb = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            //transforms NV21 pixel data into RGB pixels
-            decodeYUV420SP(pixels, data, camera.getParameters().getPreviewSize().width,  camera.getParameters().getPreviewSize().height);
+            //transforms NV21 pixel data into RGB pixels pick it up
+            int width = camera.getParameters().getPreviewSize().width;
+            int height = camera.getParameters().getPreviewSize().height;
+            decodeYUV420SP(pixels, data, width,  height);
+            int topBar = multipleRowAverage(0,20,height,width);
             //Outuput the value of the top left pixel in the preview to LogCat
-            Log.i("Pixels", "The top right pixel has the following RGB (hexadecimal) values:"
-                    +Integer.toHexString(pixels[0]));
+            if(isBlack(topBar,10))
+                Log.i("Pixels", "Top Bar is black");
+
         }
     };
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
         mCamera = camera;
+        mCamera.setPreviewCallback(cb);
 
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
@@ -39,7 +44,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.addCallback(this);
         // deprecated setting, but required on Android versions prior to 3.0
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        mCamera.setPreviewCallback(cb);
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -117,7 +121,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         final int frameSize = width * height;
 
-        for (int j = 0, yp = 0; j < height; j++) {       int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+        for (int j = 0, yp = 0; j < height; j++) {
+            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
             for (int i = 0; i < width; i++, yp++) {
                 int y = (0xff & ((int) yuv420sp[yp])) - 16;
                 if (y < 0)
@@ -131,15 +136,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 int r = (y1192 + 1634 * v);
                 int g = (y1192 - 833 * v - 400 * u);
                 int b = (y1192 + 2066 * u);
-
-                if (r < 0)                  r = 0;               else if (r > 262143)
+                if (r < 0)
+                    r = 0;
+                else if (r > 262143)
                     r = 262143;
-                if (g < 0)                  g = 0;               else if (g > 262143)
+                if (g < 0)
+                    g = 0;
+                else if (g > 262143)
                     g = 262143;
-                if (b < 0)                  b = 0;               else if (b > 262143)
+                if (b < 0)
+                    b = 0;
+                else if (b > 262143)
                     b = 262143;
 
-                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
+                rgb[yp] = 0x00000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
             }
         }
     }
@@ -188,5 +198,51 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         float x = event.getX(0) - event.getX(1);
         float y = event.getY(0) - event.getY(1);
         return (float)Math.sqrt(x * x + y * y);
+    }
+
+    private int rowAverage(int rownum, int height, int width){
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        for(int i = 0; i < height; ++i){
+            int rgb = pixels[rownum+i*width];
+            r += ((rgb >> 16)& 0x000000ff);
+            g += ((rgb >> 8)& 0x000000ff);
+            b += ((rgb & 0x000000ff));
+        }
+        r = r/height;
+        g = g/height;
+        b = b/height;
+        int result = ((((r << 16)&0x00ff0000)|(g << 8)& 0x0000ff00|(b & 0x000000ff))& 0x00ffffff);
+        return result;
+    }
+
+    private int multipleRowAverage(int rowNum,int length, int height, int width){
+        int r = 0;
+        int g = 0;
+        int b = 0;
+        for(int i = 0; i < length; ++i){
+            int rgb = rowAverage(rowNum+i,height,width);
+            r += ((rgb >> 16)& 0x000000ff);
+            g += ((rgb >> 8)& 0x000000ff);
+            b += ((rgb & 0x000000ff));
+        }
+        r = r/length;
+        g = g/length;
+        b = b/length;
+        int result = ((((r << 16)&0x00ff0000)|(g << 8)& 0x0000ff00|(b & 0x000000ff))& 0x00ffffff);
+        return result;
+    }
+
+    private boolean isBlack(int color,int threshold){
+        int r = ((color >> 16)& 0x000000ff);
+        int g = ((color >> 8)& 0x000000ff);
+        int b = ((color & 0x000000ff));
+        if(r < threshold && g < threshold && b < threshold){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }
