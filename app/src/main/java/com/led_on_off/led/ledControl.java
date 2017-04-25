@@ -1,23 +1,18 @@
 package com.led_on_off.led;
 
 import android.hardware.Camera;
-import android.support.v4.view.MotionEventCompat;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.app.ProgressDialog;
@@ -27,11 +22,10 @@ import android.os.AsyncTask;
 
 import java.io.IOException;
 import java.util.UUID;
-import static android.content.ContentValues.TAG;
 
 public class ledControl extends ActionBarActivity {
-    private int inactive = 0x8056B3CD;
-    private int active = 0x8056cdab;
+    private int INACTIVE = 0x8056B3CD;
+    private int ACTIVE = 0x8056cdab;
    // Button btnOn, btnOff, btnDis;
     ImageButton On, Off, Discnt;
 
@@ -239,20 +233,20 @@ public class ledControl extends ActionBarActivity {
         if(topIsBlack != topBarBlack){
             topBarBlack = topIsBlack;
             if(topBarBlack){
-                top.setBackgroundColor(active);
+                top.setBackgroundColor(ACTIVE);
             }
             else {
-                top.setBackgroundColor(inactive);
+                top.setBackgroundColor(INACTIVE);
             }
         }
 
         if(botIsBlack != botBarBlack){
             botBarBlack = topIsBlack;
             if(botBarBlack){
-                bot.setBackgroundColor(active);
+                bot.setBackgroundColor(ACTIVE);
             }
             else {
-                bot.setBackgroundColor(inactive);
+                bot.setBackgroundColor(INACTIVE);
             }
         }
     }
