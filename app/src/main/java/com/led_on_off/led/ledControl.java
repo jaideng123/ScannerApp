@@ -30,7 +30,8 @@ import java.util.UUID;
 import static android.content.ContentValues.TAG;
 
 public class ledControl extends ActionBarActivity {
-
+    private int inactive = 0x8056B3CD;
+    private int active = 0x8056cdab;
    // Button btnOn, btnOff, btnDis;
     ImageButton On, Off, Discnt;
 
@@ -45,6 +46,8 @@ public class ledControl extends ActionBarActivity {
     ImageView bot = null;
     public static int currentTopY = 0;
     public static int currentBotY = 0;
+    boolean topBarBlack = false;
+    boolean botBarBlack = false;
     //SPP UUID. Look for it
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -131,7 +134,7 @@ public class ledControl extends ActionBarActivity {
         catch(Exception e){
 
         }
-        mPreview = new CameraPreview(this, c);
+        mPreview = new CameraPreview(this, c, ledControl.this);
         FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         top = (ImageView) findViewById(R.id.topBox);
@@ -229,6 +232,28 @@ public class ledControl extends ActionBarActivity {
             ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
             p.setMargins(l, t, r, b);
             v.requestLayout();
+        }
+    }
+
+    public void barsChanged(boolean topIsBlack, boolean botIsBlack){
+        if(topIsBlack != topBarBlack){
+            topBarBlack = topIsBlack;
+            if(topBarBlack){
+                top.setBackgroundColor(active);
+            }
+            else {
+                top.setBackgroundColor(inactive);
+            }
+        }
+
+        if(botIsBlack != botBarBlack){
+            botBarBlack = topIsBlack;
+            if(botBarBlack){
+                bot.setBackgroundColor(active);
+            }
+            else {
+                bot.setBackgroundColor(inactive);
+            }
         }
     }
 
