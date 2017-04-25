@@ -18,6 +18,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera mCamera;
     float mDist = 0;
     private int[] pixels;
+    ledControl v;
     Camera.PreviewCallback cb = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
@@ -28,16 +29,24 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             int topBar = multipleRowAverage(ledControl.currentTopY,20,height,width);
             int botBar = multipleRowAverage(ledControl.currentBotY,20,height,width);
             //Outuput the value of the top left pixel in the preview to LogCat
-            if(isBlack(topBar,100))
+            boolean top = false;
+            if(isBlack(topBar,80)) {
                 Log.i("Pixels", "Top Bar is black");
-            if(isBlack(botBar,100))
+                top = true;
+            }
+            boolean bot = false;
+            if(isBlack(botBar,80)) {
                 Log.i("Pixels", "Bottom Bar is black");
+                bot = true;
+            }
+            v.barsChanged(top,bot);
 
         }
     };
 
-    public CameraPreview(Context context, Camera camera) {
+    public CameraPreview(Context context, Camera camera, ledControl view) {
         super(context);
+        v = view;
         mCamera = camera;
         mCamera.setPreviewCallback(cb);
 

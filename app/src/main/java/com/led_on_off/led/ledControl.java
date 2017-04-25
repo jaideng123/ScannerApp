@@ -1,8 +1,6 @@
 package com.led_on_off.led;
 
 import android.hardware.Camera;
-import android.support.v4.view.MotionEventCompat;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +15,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 import android.widget.Toast;
 import android.app.ProgressDialog;
@@ -27,12 +24,15 @@ import android.os.AsyncTask;
 
 import java.io.IOException;
 import java.util.UUID;
-import static android.content.ContentValues.TAG;
+
+import static java.lang.Thread.sleep;
 
 public class ledControl extends ActionBarActivity {
-
+    private int inactive = 0x8056B3CD;
+    private int active = 0x8056cdab;
+    private boolean pressedDown = false;
    // Button btnOn, btnOff, btnDis;
-    ImageButton On, Off, Discnt;
+    ImageButton Play, Rewind, Discnt, FastForward;
 
     String address = null;
     private ProgressDialog progress;
@@ -45,6 +45,8 @@ public class ledControl extends ActionBarActivity {
     ImageView bot = null;
     public static int currentTopY = 0;
     public static int currentBotY = 0;
+    boolean topBarBlack = false;
+    boolean botBarBlack = false;
     //SPP UUID. Look for it
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -87,10 +89,10 @@ public class ledControl extends ActionBarActivity {
         setContentView(R.layout.activity_led_control);
 
         //call the widgets
-        On = (ImageButton)findViewById(R.id.play);
-        Off = (ImageButton)findViewById(R.id.rewind);
+        Play = (ImageButton)findViewById(R.id.play);
+        Rewind = (ImageButton)findViewById(R.id.rewind);
         Discnt = (ImageButton)findViewById(R.id.discnt);
-        //Abt = (ImageButton)findViewById(R.id.abt);
+        FastForward = (ImageButton)findViewById(R.id.fastForward);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -98,20 +100,22 @@ public class ledControl extends ActionBarActivity {
         new ConnectBT().execute(); //Call the class to connect
 
         //commands to be sent to bluetooth
-        On.setOnClickListener(new View.OnClickListener()
+        Play.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
-                turnOnLed();      //method to turn on
+                playFunc();      //method to turn on
             }
         });
 
-        Off.setOnClickListener(new View.OnClickListener() {
+        Rewind.setOnTouchListener(new View.OnTouchListener()
+        {
             @Override
-            public void onClick(View v)
+            public boolean onTouch(View v, MotionEvent m)
             {
-                turnOffLed();   //method to turn off
+                rewindFunc(m);   //method to turn off
+                return true;
             }
         });
 
@@ -124,6 +128,15 @@ public class ledControl extends ActionBarActivity {
             }
         });
 
+        FastForward.setOnTouchListener(new View.OnTouchListener()
+        {
+            @Override
+            public boolean onTouch(View v, MotionEvent m)
+            {
+                return fastForwardFunc(m);
+            }
+        });
+
         try{
             c = Camera.open();
             c.setDisplayOrientation(90);
@@ -131,7 +144,7 @@ public class ledControl extends ActionBarActivity {
         catch(Exception e){
 
         }
-        mPreview = new CameraPreview(this, c);
+        mPreview = new CameraPreview(this, c, ledControl.this);
         FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         top = (ImageView) findViewById(R.id.topBox);
@@ -157,27 +170,33 @@ public class ledControl extends ActionBarActivity {
 
     }
 
-    private void turnOffLed()
+    private void rewindFunc(MotionEvent m)
     {
         if (btSocket!=null)
         {
             try
             {
-                btSocket.getOutputStream().write('3');
+                btSocket.getOutputStream().write('C');
+                while(m.getAction() == MotionEvent.ACTION_DOWN) {
+                    btSocket.getOutputStream().write('3');
+                    sleep(10);
+                }
+                btSocket.getOutputStream().write('C');
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 msg("Error");
             }
         }
     }
 
-    private void turnOnLed()
+    private void playFunc()
     {
         if (btSocket!=null)
         {
             try
             {
+                btSocket.getOutputStream().write('C');
                 btSocket.getOutputStream().write('1');
             }
             catch (IOException e)
@@ -187,19 +206,41 @@ public class ledControl extends ActionBarActivity {
         }
     }
 
+    private boolean fastForwardFunc(MotionEvent m)
+    {
+        if (btSocket!=null)
+        {
+            try
+            {
+                btSocket.getOutputStream().write('C');
+                Log.d("lick", "fastForwardFunc: before loop");
+                switch(m.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+
+                        if (pressedDown == false) {
+                            pressedDown = true;
+                            new fastForwardTask().execute();
+                        }
+                    case MotionEvent.ACTION_UP:
+
+                        pressedDown = false;
+
+                }
+                Log.d("dick", "fastForwardFunc: after loop");
+                return true;
+            }
+            catch (Exception e)
+            {
+                msg("Error");
+            }
+        }
+        return false;
+    }
+
     // fast way to call Toast
     private void msg(String s)
     {
         Toast.makeText(getApplicationContext(),s,Toast.LENGTH_LONG).show();
-    }
-
-    public  void about(View v)
-    {
-//        if(v.getId() == R.id.abt)
-//        {
-//            Intent i = new Intent(this, AboutActivity.class);
-//            startActivity(i);
-//        }
     }
 
     @Override
@@ -232,7 +273,44 @@ public class ledControl extends ActionBarActivity {
         }
     }
 
+    public void barsChanged(boolean topIsBlack, boolean botIsBlack){
+        if(topIsBlack != topBarBlack){
+            topBarBlack = topIsBlack;
+            if(topBarBlack){
+                top.setBackgroundColor(active);
+            }
+            else {
+                top.setBackgroundColor(inactive);
+            }
+        }
 
+        if(botIsBlack != botBarBlack){
+            botBarBlack = topIsBlack;
+            if(botBarBlack){
+                bot.setBackgroundColor(active);
+            }
+            else {
+                bot.setBackgroundColor(inactive);
+            }
+        }
+    }
+
+    private class fastForwardTask extends AsyncTask<Void, Void, Void>{
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            while (pressedDown) {
+                sendFastForwardSignal();
+            }
+            return null;
+        }
+        public void sendFastForwardSignal(){
+            try {
+                btSocket.getOutputStream().write('1');
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 
     private class ConnectBT extends AsyncTask<Void, Void, Void>  // UI thread
@@ -262,7 +340,7 @@ public class ledControl extends ActionBarActivity {
             catch (IOException e)
             {
 
-                //ConnectSuccess = false;//if the try failed, you can check the exception here
+                ConnectSuccess = false;//if the try failed, you can check the exception here
             }
             return null;
         }

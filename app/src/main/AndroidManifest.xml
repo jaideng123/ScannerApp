@@ -38,10 +38,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.led_on_off.led.AboutActivity"
-            android:label="@string/title_activity_about">
-        </activity>
     </application>
 
 </manifest>
