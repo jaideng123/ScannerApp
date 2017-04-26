@@ -1,6 +1,8 @@
 package com.led_on_off.led;
 
 import android.hardware.Camera;
+import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,7 +24,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.os.AsyncTask;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
 
 import static java.lang.Thread.sleep;
@@ -47,8 +53,11 @@ public class ledControl extends ActionBarActivity {
     public static int currentBotY = 0;
     boolean topBarBlack = false;
     boolean botBarBlack = false;
+    boolean openCamera = false;
+    boolean rewindBool = false;
     //SPP UUID. Look for it
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    Handler handler = new Handler();
 
     static public void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
         final int frameSize = width * height;
@@ -109,13 +118,12 @@ public class ledControl extends ActionBarActivity {
             }
         });
 
-        Rewind.setOnTouchListener(new View.OnTouchListener()
+        Rewind.setOnClickListener(new View.OnClickListener()
         {
             @Override
-            public boolean onTouch(View v, MotionEvent m)
+            public void onClick(View v)
             {
-                rewindFunc(m);   //method to turn off
-                return true;
+                rewindFunc();
             }
         });
 
@@ -144,6 +152,9 @@ public class ledControl extends ActionBarActivity {
         catch(Exception e){
 
         }
+        Camera.Parameters params = c.getParameters();
+        params.setPictureSize(1920,1080);
+        c.setParameters(params);
         mPreview = new CameraPreview(this, c, ledControl.this);
         FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
         preview.addView(mPreview);
@@ -154,7 +165,16 @@ public class ledControl extends ActionBarActivity {
         setMargins(bot,0,dimensions.width-400,0,0);
         currentTopY = 100;
         currentBotY = dimensions.width-400;
+        handler.post(runnableCode);
     }
+    private Runnable runnableCode = new Runnable() {
+        @Override
+        public void run() {
+            Log.d("Handlers", "Called on main thread");
+            openCamera = true;
+            handler.postDelayed(runnableCode, 5000);
+        }
+    };
     private void Disconnect()
     {
         if (btSocket!=null) //If the btSocket is busy
@@ -170,16 +190,19 @@ public class ledControl extends ActionBarActivity {
 
     }
 
-    private void rewindFunc(MotionEvent m)
+    private void rewindFunc()
     {
         if (btSocket!=null)
         {
             try
             {
+                openCamera = false;
                 btSocket.getOutputStream().write('C');
-                while(m.getAction() == MotionEvent.ACTION_DOWN) {
-                    btSocket.getOutputStream().write('3');
-                    sleep(10);
+                rewindBool = !rewindBool;
+                while(rewindBool) {
+
+                    btSocket.getOutputStream().write('4');
+                    sleep(100);
                 }
                 btSocket.getOutputStream().write('C');
             }
@@ -196,6 +219,7 @@ public class ledControl extends ActionBarActivity {
         {
             try
             {
+                openCamera = true;
                 btSocket.getOutputStream().write('C');
                 btSocket.getOutputStream().write('1');
             }
@@ -212,6 +236,7 @@ public class ledControl extends ActionBarActivity {
         {
             try
             {
+                openCamera = false;
                 btSocket.getOutputStream().write('C');
                 Log.d("lick", "fastForwardFunc: before loop");
                 switch(m.getAction()) {
@@ -293,6 +318,11 @@ public class ledControl extends ActionBarActivity {
                 bot.setBackgroundColor(inactive);
             }
         }
+        if(topIsBlack && botIsBlack && openCamera) {
+            openCamera = false;
+            c.takePicture(null, null, rawPic);
+            msg("Picture taken");
+        }
     }
 
     private class fastForwardTask extends AsyncTask<Void, Void, Void>{
@@ -312,6 +342,35 @@ public class ledControl extends ActionBarActivity {
         }
     }
 
+    Camera.PictureCallback rawPic = new Camera.PictureCallback(){
+        public void onPictureTaken(byte[] data, Camera camera) {
+            new SavePhotoTask().execute(data);
+        }
+    };
+
+    private class SavePhotoTask extends AsyncTask<byte[], String, String> {
+        @Override
+        protected String doInBackground(byte[]... jpeg) {
+            File photo = new File(Environment.getExternalStorageDirectory()+"/Download",
+                    (new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()))+".jpg");
+            Log.d("picture", (Environment.getExternalStorageDirectory().toString()+"/Download"));
+            if (photo.exists()) {
+                photo.delete();
+            }
+
+            try {
+                FileOutputStream fos=new FileOutputStream(photo.getPath());
+
+                fos.write(jpeg[0]);
+                fos.close();
+            }
+            catch (java.io.IOException e) {
+                Log.e("PictureDemo", "Exception in photoCallback", e);
+            }
+
+            return(null);
+        }
+    }
 
     private class ConnectBT extends AsyncTask<Void, Void, Void>  // UI thread
     {
