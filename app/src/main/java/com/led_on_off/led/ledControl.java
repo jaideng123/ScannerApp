@@ -38,7 +38,7 @@ public class ledControl extends ActionBarActivity {
     private int active = 0x8056cdab;
     private boolean pressedDown = false;
    // Button btnOn, btnOff, btnDis;
-    ImageButton Play, Rewind, Discnt, FastForward;
+    ImageButton Play, Discnt;
 
     String address = null;
     private ProgressDialog progress;
@@ -54,7 +54,6 @@ public class ledControl extends ActionBarActivity {
     boolean topBarBlack = false;
     boolean botBarBlack = false;
     boolean openCamera = false;
-    boolean rewindBool = false;
     boolean isMoving = false;
     boolean playing = false;
     boolean safePic = true;
@@ -102,9 +101,7 @@ public class ledControl extends ActionBarActivity {
 
         //call the widgets
         Play = (ImageButton)findViewById(R.id.play);
-        Rewind = (ImageButton)findViewById(R.id.rewind);
         Discnt = (ImageButton)findViewById(R.id.discnt);
-        FastForward = (ImageButton)findViewById(R.id.fastForward);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -121,30 +118,12 @@ public class ledControl extends ActionBarActivity {
             }
         });
 
-        Rewind.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                rewindFunc();
-            }
-        });
-
         Discnt.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
             {
                 Disconnect(); //close connection
-            }
-        });
-
-        FastForward.setOnTouchListener(new View.OnTouchListener()
-        {
-            @Override
-            public boolean onTouch(View v, MotionEvent m)
-            {
-                return fastForwardFunc(m);
             }
         });
 
@@ -215,29 +194,6 @@ public class ledControl extends ActionBarActivity {
 
     }
 
-    private void rewindFunc()
-    {
-        if (btSocket!=null)
-        {
-            try
-            {
-                openCamera = false;
-                btSocket.getOutputStream().write('C');
-                rewindBool = !rewindBool;
-                while(rewindBool) {
-
-                    btSocket.getOutputStream().write('4');
-                    sleep(100);
-                }
-                btSocket.getOutputStream().write('C');
-            }
-            catch (Exception e)
-            {
-                msg("Error");
-            }
-        }
-    }
-
     private void playFunc()
     {
         if (btSocket!=null)
@@ -245,38 +201,6 @@ public class ledControl extends ActionBarActivity {
             isMoving = true;
             playing = true;
         }
-    }
-
-    private boolean fastForwardFunc(MotionEvent m)
-    {
-        if (btSocket!=null)
-        {
-            try
-            {
-                openCamera = false;
-                btSocket.getOutputStream().write('C');
-                Log.d("lick", "fastForwardFunc: before loop");
-                switch(m.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-
-                        if (pressedDown == false) {
-                            pressedDown = true;
-                            new fastForwardTask().execute();
-                        }
-                    case MotionEvent.ACTION_UP:
-
-                        pressedDown = false;
-
-                }
-                Log.d("dick", "fastForwardFunc: after loop");
-                return true;
-            }
-            catch (Exception e)
-            {
-                msg("Error");
-            }
-        }
-        return false;
     }
 
     // fast way to call Toast
@@ -335,28 +259,20 @@ public class ledControl extends ActionBarActivity {
                 bot.setBackgroundColor(inactive);
             }
         }
-        if(topIsBlack && botIsBlack && openCamera && safePic) {
+        if(topIsBlack && botIsBlack && openCamera) {
             isMoving = false;
             openCamera = false;
-            c.takePicture(null, null, rawPic);
+            boolean picturenottaken = true;
+            while(picturenottaken) {
+                try {
+                    c.takePicture(null, null, rawPic);
+                    picturenottaken = false;
+                } catch (Exception e) {
+                    Log.e("Camera", e.toString());
+                }
+            }
             msg("Picture taken");
-        }
-    }
-
-    private class fastForwardTask extends AsyncTask<Void, Void, Void>{
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            while (pressedDown) {
-                sendFastForwardSignal();
-            }
-            return null;
-        }
-        public void sendFastForwardSignal(){
-            try {
-                btSocket.getOutputStream().write('1');
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            isMoving = true;
         }
     }
 
@@ -383,11 +299,10 @@ public class ledControl extends ActionBarActivity {
                 fos.write(jpeg[0]);
                 fos.close();
             }
-            catch (java.io.IOException e) {
+            catch (Exception e) {
                 Log.e("PictureDemo", "Exception in photoCallback", e);
             }
-            safePic = true;
-            isMoving = true;
+
             return(null);
         }
     }

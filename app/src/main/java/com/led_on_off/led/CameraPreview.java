@@ -28,14 +28,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             decodeYUV420SP(pixels, data, width,  height);
             int topBar = multipleRowAverage(ledControl.currentTopY,20,height,width);
             int botBar = multipleRowAverage(ledControl.currentBotY,20,height,width);
+            int top1 = multipleRowAverage(ledControl.currentTopY+20,20,height,width);
+            int top2 = multipleRowAverage(ledControl.currentTopY-20,20,height,width);
+            int bot1 = multipleRowAverage(ledControl.currentBotY+20,20,height,width);
+            int bot2 = multipleRowAverage(ledControl.currentBotY-20,20,height,width);
             //Outuput the value of the top left pixel in the preview to LogCat
             boolean top = false;
-            if(isBlack(topBar,60)) {
+            if(isBlack(topBar,60)|| isBlack(top1,60) || isBlack(top2,60)) {
                 Log.i("Pixels", "Top Bar is black");
                 top = true;
             }
             boolean bot = false;
-            if(isBlack(botBar,60)) {
+            if(isBlack(botBar,60)|| isBlack(bot1,60) || isBlack(bot2,60)) {
                 Log.i("Pixels", "Bottom Bar is black");
                 bot = true;
             }

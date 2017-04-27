@@ -39,36 +39,12 @@
         android:id="@+id/play"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:layout_above="@+id/discnt"
         android:layout_alignTop="@+id/rewind"
         android:layout_centerHorizontal="true"
         android:background="@null"
         android:scaleType="fitXY"
         android:src="@drawable/play_button" />
-
-    <ImageButton
-        android:id="@+id/rewind"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_above="@+id/discnt"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="19dp"
-        android:background="@null"
-        android:cropToPadding="false"
-        android:scaleType="fitXY"
-        android:src="@drawable/rewind1600" />
-
-    <ImageButton
-        android:id="@+id/fastForward"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignBottom="@+id/play"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/play"
-        android:background="@null"
-        android:scaleType="fitXY"
-        android:src="@drawable/fast_forward1600" />
 
     <ImageButton
         android:layout_width="wrap_content"
