@@ -55,6 +55,9 @@ public class ledControl extends ActionBarActivity {
     boolean botBarBlack = false;
     boolean openCamera = false;
     boolean rewindBool = false;
+    boolean isMoving = false;
+    boolean playing = false;
+    boolean safePic = true;
     //SPP UUID. Look for it
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     Handler handler = new Handler();
@@ -166,15 +169,37 @@ public class ledControl extends ActionBarActivity {
         currentTopY = 100;
         currentBotY = dimensions.width-400;
         handler.post(runnableCode);
+        handler.post(movingCode);
+        File folder = new File(Environment.getExternalStorageDirectory() +
+                File.separator + "ScannerApp");
+        boolean success = true;
+        if (!folder.exists()) {
+            success = folder.mkdirs();
+        }
     }
     private Runnable runnableCode = new Runnable() {
         @Override
         public void run() {
             Log.d("Handlers", "Called on main thread");
-            openCamera = true;
-            handler.postDelayed(runnableCode, 5000);
+            if(playing)
+                openCamera = true;
+            handler.postDelayed(runnableCode, 1000);
         }
     };
+    private Runnable movingCode = new Runnable() {
+        @Override
+        public void run() {
+            Log.d("Handlers", "Moving reel");
+            if(isMoving)
+                try {
+                    btSocket.getOutputStream().write('1');
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            handler.postDelayed(movingCode, 480);
+        }
+    };
+
     private void Disconnect()
     {
         if (btSocket!=null) //If the btSocket is busy
@@ -217,16 +242,8 @@ public class ledControl extends ActionBarActivity {
     {
         if (btSocket!=null)
         {
-            try
-            {
-                openCamera = true;
-                btSocket.getOutputStream().write('C');
-                btSocket.getOutputStream().write('1');
-            }
-            catch (IOException e)
-            {
-                msg("Error");
-            }
+            isMoving = true;
+            playing = true;
         }
     }
 
@@ -318,7 +335,8 @@ public class ledControl extends ActionBarActivity {
                 bot.setBackgroundColor(inactive);
             }
         }
-        if(topIsBlack && botIsBlack && openCamera) {
+        if(topIsBlack && botIsBlack && openCamera && safePic) {
+            isMoving = false;
             openCamera = false;
             c.takePicture(null, null, rawPic);
             msg("Picture taken");
@@ -351,7 +369,8 @@ public class ledControl extends ActionBarActivity {
     private class SavePhotoTask extends AsyncTask<byte[], String, String> {
         @Override
         protected String doInBackground(byte[]... jpeg) {
-            File photo = new File(Environment.getExternalStorageDirectory()+"/Download",
+            safePic = false;
+            File photo = new File(Environment.getExternalStorageDirectory()+"/ScannerApp",
                     (new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()))+".jpg");
             Log.d("picture", (Environment.getExternalStorageDirectory().toString()+"/Download"));
             if (photo.exists()) {
@@ -367,7 +386,8 @@ public class ledControl extends ActionBarActivity {
             catch (java.io.IOException e) {
                 Log.e("PictureDemo", "Exception in photoCallback", e);
             }
-
+            safePic = true;
+            isMoving = true;
             return(null);
         }
     }
