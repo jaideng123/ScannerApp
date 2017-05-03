@@ -24,3 +24,5 @@ HC-05 Wiring: https://cdn.instructables.com/FXV/32RA/I8SLPA3L/FXV32RAI8SLPA3L.ME
 The mounts were 3D-printed using solidworks, the files are under the Final-3D-Designs directory and could use some reworking as it was very hard to fit the screws into some of them
 
 the solenoids can be a little tempermental so just give them a gentle nudge if they dont engage
+
+If you have any questions or need any assistance getting the project running email me at jaideng123@yahoo.com
