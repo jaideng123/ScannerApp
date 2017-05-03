@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/action_bar"
-    tools:context="com.led_on_off.led.ledControl"
+    tools:context="com.microfilmScanner.app.ScannerPreview"
     android:background="#1d4851">
 
     <FrameLayout
@@ -40,7 +40,6 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_above="@+id/discnt"
-        android:layout_alignTop="@+id/rewind"
         android:layout_centerHorizontal="true"
         android:background="@null"
         android:scaleType="fitXY"

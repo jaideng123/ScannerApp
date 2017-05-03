@@ -5,7 +5,7 @@ android {
     buildToolsVersion '25.0.0'
 
     defaultConfig {
-        applicationId "com.led.led_on_off"
+        applicationId "com.com.microfilmScanner.app.led_on_off"
         minSdkVersion 14
         targetSdkVersion 21
         versionCode 1

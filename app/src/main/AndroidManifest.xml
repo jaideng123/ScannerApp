@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.led_on_off.led">
+    package="com.microfilmScanner.app">
 
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -14,7 +14,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme">
         <activity
-            android:name="com.led_on_off.led.SplashScreen"
+            android:name="com.microfilmScanner.app.SplashScreen"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,14 +23,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.led_on_off.led.DeviceList"
+            android:name="com.microfilmScanner.app.DeviceList"
             android:label="@string/app_name">
 
         </activity>
 
         <activity
-            android:name="com.led_on_off.led.ledControl"
-            android:label="LED Control"
+            android:name="com.microfilmScanner.app.ScannerPreview"
+            android:label="ScannerPreview"
             android:screenOrientation="portrait">
 
             <intent-filter>

@@ -1,4 +1,4 @@
-package com.led_on_off.led;
+package com.microfilmScanner.app;
 
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
@@ -100,10 +100,10 @@ public class DeviceList extends ActionBarActivity
             String address = info.substring(info.length() - 17);
 
             // Make an intent to start next activity.
-            Intent i = new Intent(DeviceList.this, ledControl.class);
+            Intent i = new Intent(DeviceList.this, ScannerPreview.class);
 
             //Change the activity.
-            i.putExtra(EXTRA_ADDRESS, address); //this will be received at ledControl (class) Activity
+            i.putExtra(EXTRA_ADDRESS, address); //this will be received at ScannerPreview (class) Activity
             startActivity(i);
         }
     };

@@ -1,4 +1,4 @@
-package com.led_on_off.led;
+package com.microfilmScanner.app;
 
 import android.hardware.Camera;
 import android.os.Environment;
@@ -11,7 +11,6 @@ import android.view.MenuItem;
 
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -33,7 +32,7 @@ import java.util.UUID;
 
 import static java.lang.Thread.sleep;
 
-public class ledControl extends ActionBarActivity {
+public class ScannerPreview extends ActionBarActivity {
     private int inactive = 0x8056B3CD;
     private int active = 0x8056cdab;
     private boolean pressedDown = false;
@@ -96,8 +95,8 @@ public class ledControl extends ActionBarActivity {
         Intent newint = getIntent();
         address = newint.getStringExtra(DeviceList.EXTRA_ADDRESS); //receive the address of the bluetooth device
 
-        //view of the ledControl
-        setContentView(R.layout.activity_led_control);
+        //view of the ScannerPreview
+        setContentView(R.layout.activity_scanner_preview);
 
         //call the widgets
         Play = (ImageButton)findViewById(R.id.play);
@@ -137,7 +136,7 @@ public class ledControl extends ActionBarActivity {
         Camera.Parameters params = c.getParameters();
         params.setPictureSize(1920,1080);
         c.setParameters(params);
-        mPreview = new CameraPreview(this, c, ledControl.this);
+        mPreview = new CameraPreview(this, c, ScannerPreview.this);
         FrameLayout preview = (FrameLayout)findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         top = (ImageView) findViewById(R.id.topBox);
@@ -212,7 +211,7 @@ public class ledControl extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_led_control, menu);
+        getMenuInflater().inflate(R.menu.menu_scanner_preview, menu);
         return true;
     }
 
@@ -314,7 +313,7 @@ public class ledControl extends ActionBarActivity {
         @Override
         protected void onPreExecute()
         {
-            progress = ProgressDialog.show(ledControl.this, "Connecting...", "Please wait!!!");  //show a progress dialog
+            progress = ProgressDialog.show(ScannerPreview.this, "Connecting...", "Please wait!!!");  //show a progress dialog
         }
 
         @Override

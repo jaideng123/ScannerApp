@@ -1,4 +1,4 @@
-package com.led_on_off.led;
+package com.microfilmScanner.app;
 
 import android.content.Context;
 import android.hardware.Camera;
@@ -11,14 +11,13 @@ import java.io.IOException;
 import java.util.List;
 
 import static android.content.ContentValues.TAG;
-import static com.led_on_off.led.ledControl.decodeYUV420SP;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
     float mDist = 0;
     private int[] pixels;
-    ledControl v;
+    ScannerPreview v;
     Camera.PreviewCallback cb = new Camera.PreviewCallback() {
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
@@ -26,12 +25,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             int width = camera.getParameters().getPreviewSize().width;
             int height = camera.getParameters().getPreviewSize().height;
             decodeYUV420SP(pixels, data, width,  height);
-            int topBar = multipleRowAverage(ledControl.currentTopY,20,height,width);
-            int botBar = multipleRowAverage(ledControl.currentBotY,20,height,width);
-            int top1 = multipleRowAverage(ledControl.currentTopY+20,20,height,width);
-            int top2 = multipleRowAverage(ledControl.currentTopY-20,20,height,width);
-            int bot1 = multipleRowAverage(ledControl.currentBotY+20,20,height,width);
-            int bot2 = multipleRowAverage(ledControl.currentBotY-20,20,height,width);
+            int topBar = multipleRowAverage(ScannerPreview.currentTopY,20,height,width);
+            int botBar = multipleRowAverage(ScannerPreview.currentBotY,20,height,width);
+            int top1 = multipleRowAverage(ScannerPreview.currentTopY+20,20,height,width);
+            int top2 = multipleRowAverage(ScannerPreview.currentTopY-20,20,height,width);
+            int bot1 = multipleRowAverage(ScannerPreview.currentBotY+20,20,height,width);
+            int bot2 = multipleRowAverage(ScannerPreview.currentBotY-20,20,height,width);
             //Outuput the value of the top left pixel in the preview to LogCat
             boolean top = false;
             if(isBlack(topBar,60)|| isBlack(top1,60) || isBlack(top2,60)) {
@@ -48,7 +47,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     };
 
-    public CameraPreview(Context context, Camera camera, ledControl view) {
+    public CameraPreview(Context context, Camera camera, ScannerPreview view) {
         super(context);
         v = view;
         mCamera = camera;
