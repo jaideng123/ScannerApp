@@ -21,8 +21,8 @@ AccelStepper stepper1(HALFSTEP, motorPin1, motorPin3, motorPin2, motorPin4);//Le
 AccelStepper stepper2(HALFSTEP, motorPin5, motorPin7, motorPin6, motorPin8);//Right Motor
 
 // variables
-int turnSteps = 5; // number of steps for a 90 degree turn
-int lineSteps = -5; //number of steps to drive straight
+int turnSteps = 5; // number of steps to move forward each time
+int lineSteps = -5; //number of steps to move backward each time
 int stepperSpeed = 1000; //speed of the stepper (steps per second)
 int steps1 = 0; // keep track of the step count for motor 1
 int steps2 = 0; // keep track of the step count for motor 2
@@ -68,12 +68,12 @@ void setup() {
   stepper2.setMaxSpeed(2000.0);
   stepper2.move(1);  // I found this necessary
   stepper2.setSpeed(stepperSpeed);
-  queue.enqueue('1');
-  queue.enqueue('1');
-  queue.enqueue('1');
-  queue.enqueue('3');
-  queue.enqueue('3');
-  queue.enqueue('3');
+//   queue.enqueue('1');
+//   queue.enqueue('1');
+//   queue.enqueue('1');
+//   queue.enqueue('3');
+//   queue.enqueue('3');
+//   queue.enqueue('3');
   
 
 }
