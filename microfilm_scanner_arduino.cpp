@@ -1,3 +1,4 @@
+// This is the code that's run on the arduino
 #include <AccelStepper.h>
 #include <QueueArray.h>
 #define HALFSTEP 8
